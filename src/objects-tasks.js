@@ -152,25 +152,27 @@ function makeWord(lettersObject) {
  *    sellTickets([25, 100]) => false (The seller does not have enough money to give change.)
  */
 function sellTickets(queue) {
-  let money = 0;
+  const money = { 25: 0, 50: 0 };
   return queue.every((value) => {
     if (value === 25) {
-      money += value;
+      money[25] += 1;
       return true;
     }
-    if (value === 50) {
-      if (money >= 25) {
-        money -= 25;
-        return true;
-      }
-      return false;
+    if (value === 50 && money[25] > 0) {
+      money[25] -= 1;
+      money[50] += 1;
+      return true;
     }
     if (value === 100) {
-      if (money >= 75) {
-        money -= 75;
+      if (money[50] > 0 && money[25] > 0) {
+        money[50] -= 1;
+        money[25] -= 1;
         return true;
       }
-      return false;
+      if (money[25] >= 3) {
+        money[25] -= 3;
+        return true;
+      }
     }
     return false;
   });
@@ -377,7 +379,7 @@ class CssSelector {
   add(v, order, unique = false) {
     if (unique && this.uniqueParts.includes(order)) {
       throw new Error(
-        'Element, id and pseudo-element should not occur more then one time inside the selector'
+        'Element, id and pseudo-element should not occur more than one time inside the selector'
       );
     }
     if (order < this.order) {
