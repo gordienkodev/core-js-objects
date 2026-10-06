@@ -357,33 +357,89 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
+class CssSelector {
+  constructor(v = '', order = 0, uniqueParts = []) {
+    this.v = v;
+    this.uniqueParts = uniqueParts;
+    this.order = order;
+  }
+
+  add(v, order, unique = false) {
+    if (unique && this.uniqueParts.includes(order)) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    if (order < this.order) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    return new CssSelector(
+      this.v + v,
+      order,
+      unique ? [...this.uniqueParts, order] : this.uniqueParts
+    );
+  }
+
+  element(v) {
+    return this.add(v, 1, true);
+  }
+
+  id(v) {
+    return this.add(`#${v}`, 2, true);
+  }
+
+  class(v) {
+    return this.add(`.${v}`, 3);
+  }
+
+  attr(v) {
+    return this.add(`[${v}]`, 4);
+  }
+
+  pseudoClass(v) {
+    return this.add(`:${v}`, 5);
+  }
+
+  pseudoElement(v) {
+    return this.add(`::${v}`, 6, true);
+  }
+
+  stringify() {
+    return this.v;
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(v) {
+    return new CssSelector().element(v);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(v) {
+    return new CssSelector().id(v);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(v) {
+    return new CssSelector().class(v);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(v) {
+    return new CssSelector().attr(v);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(v) {
+    return new CssSelector().pseudoClass(v);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(v) {
+    return new CssSelector().pseudoElement(v);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return new CssSelector(
+      `${selector1.stringify()} ${combinator} ${selector2.stringify()}`
+    );
   },
 };
 
